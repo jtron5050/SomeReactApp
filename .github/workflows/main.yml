@@ -1,21 +1,13 @@
-name: Deploy to pages
+name: Deploy to aws test
 
 on:
-  push: 
-    branches: ['main']
-
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
   id-token: write
 
 jobs:
   deploy:
-    environment: 
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,13 +21,11 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+      - name: AWS credentials
+        uses: aws-actions/configure-aws-credentials@main
         with:
-          path: './dist'
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-        
+          role-to-assume: github-actions-role
+          aws-region: us-east-2
+      - name: Additional Steps
+        run: |
+          aws sts get-caller-identity
